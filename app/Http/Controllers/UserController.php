@@ -73,7 +73,6 @@ class UserController extends Controller
             $data->phone_number = $request->input('phone_number');
             $data->photo = $request->input('photo');
             $data->save();
-            (new OrganizationController)->register_user($data);
 
             return response()->json([
                 'status' => 'success',
