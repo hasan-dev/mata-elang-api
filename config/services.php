@@ -34,9 +34,6 @@ return [
     'sensors' => [
         'base_uri' => env('SENSORS_SERVICE_BASE_URI')
     ],
-    'organizations' => [
-        'base_uri' => env('ORGANIZATIONS_SERVICE_BASE_URI')
-    ],
     'assets' => [
         'base_uri' => env('ASSETS_SERVICE_BASE_URI')
     ],

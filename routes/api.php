@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\SensorController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -54,4 +56,9 @@ Route::prefix('organizations')->group(function () {
     Route::post('/{id}/users/edit_role', [OrganizationController::class, 'edit_role']);
     Route::get('/{id}', [OrganizationController::class, 'profile']);
     Route::post('{id}/users/register', [UserController::class, 'register']);
+});
+
+Route::prefix('roles')->group(function () {
+    Route::post('/create', [RoleController::class, 'create']);
+    Route::post('/add-permission', [RolePermissionController::class, 'create']);
 });

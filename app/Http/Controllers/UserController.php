@@ -32,7 +32,7 @@ class UserController extends Controller
             $email = $request->input('email');
             $password = $request->input('password');
             $data = User::where('email', $email)->first();
-    
+
             if(Hash::check($password, $data->password))
             {
                 if(! $token = auth('api')->login($data)) {
@@ -42,16 +42,11 @@ class UserController extends Controller
                     $user->save();
                     return $this->respondWithToken($token, $data);
                 }
-            } else {
-                return response()->json([
-                    'status' => 'failed',
-                    'message' => 'Login failed'
-                ],401);
             }
         }catch(\Exception $e){
             return response()->json([
                 'status' => 'failed',
-                'message' => 'Login failed'
+                'message' => $e->getMessage()
             ],401);
         }
     }
