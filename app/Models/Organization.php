@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Organization extends Model
 {
     use HasFactory;
+    protected $table = 'organizations';
 
-    public function role() {
+    public function roles() {
         return $this->hasMany(Role::class);
     }
 
-    public function organization_member() {
+    public function organization_members() {
         return $this->hasMany(OrganizationMember::class);
     }
 }

@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
+use App\Models\OrganizationMember;
 use App\Models\User;
-use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -57,7 +58,7 @@ class UserController extends Controller
             'email' => ['required','string', 'email'],
             'password' => ['required','string'],
             'phone_number' => ['required','string'],
-            'photo' => ['required','string'],
+            'photo' => ['required']
         ]);
         
         try {
@@ -72,6 +73,46 @@ class UserController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Register success',
+                'data' => $data
+            ],200);
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => 'failed',
+                'message' => $e->getMessage()
+            ],401);
+        }
+    }
+
+    public function profile($id) {
+        $data = User::find($id);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Success',
+            'data' => new UserResource($data)
+        ], 200);
+    }
+
+    public function update(Request $request, $id) {
+        $request->validate([
+            'name' => ['required','string'],
+            'email' => ['required','string', 'email'],
+            'password' => ['required','string'],
+            'phone_number' => ['required','string'],
+            'photo' => ['required'],
+        ]);
+        
+        try {
+            $data = User::find($id);
+            $data->name = $request->input('name');
+            $data->email = $request->input('email');
+            $data->password = Hash::make($request->input('password'));
+            $data->phone_number = $request->input('phone_number');
+            $data->photo = $request->input('photo');
+            $data->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Update success',
                 'data' => $data
             ],200);
         }catch(\Exception $e){

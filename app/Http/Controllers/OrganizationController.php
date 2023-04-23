@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\OrganizationResource;
 use App\Models\Organization;
 use App\Models\OrganizationMember;
 use App\Models\Role;
@@ -18,11 +19,11 @@ class OrganizationController extends Controller
     }
 
     public function profile($id) {
-        $data = Organization::find($id);
+        $data = Organization::findOrFail($id);
         return response()->json([
             'code' => 200,
             'message' => 'Success',
-            'data' => $data
+            'data' => new OrganizationResource($data),
         ], 200);
     }
 
@@ -35,7 +36,8 @@ class OrganizationController extends Controller
             'city' => ['required', 'string'],
             'phone' => ['required', 'string'],
             'website' => ['required', 'string'],
-            'oinkcode' => ['required', 'string']
+            'oinkcode' => ['required', 'string'],
+            'parent_id' => ['integer']
         ]);
 
         try {
@@ -103,46 +105,7 @@ class OrganizationController extends Controller
         }
     }
 
-    public function create_admin(Request $request, $id) {
-        $request->validate([
-            'name' => ['required', 'string'],
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-            'phone_number' => ['required','string'],
-            'photo' => ['string']
-        ]);
-
-        try {
-            $data = new User;
-            $data->name = $request->input('name');
-            $data->email = $request->input('email');
-            $data->password = Hash::make($request->input('password'));
-            $data->phone_number = $request->input('phone_number');
-            $data->photo = $request->input('photo');
-
-            $member = new OrganizationMember;
-            $role  = Role::where('name', 'admin')->first();
-            $member->organization_id = $id;
-            $member->user_id = $data->id;
-            $member->role_id = $role->id;
-            $data->save();
-            $member->save();
-
-            return response()->json([
-                'code' => 201,
-                'message' => 'created',
-                'data' => $data
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'code' => 500,
-                'message' => 'error',
-                'data' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function get_sensor($id) {
+    public function getSensor($id) {
         try {
             $data = DB::table('sensors')
                 ->join('organizations', 'sensors.organization_id', '=', 'organizations.id')
@@ -163,7 +126,7 @@ class OrganizationController extends Controller
         }
     }
 
-    public function get_asset($id) {
+    public function getAsset($id) {
         try {
             $data = DB::table('assets')
                 ->join('organizations', 'assets.organization_id', '=', 'organizations.id')
@@ -184,7 +147,7 @@ class OrganizationController extends Controller
         }
     }
 
-    public function get_role($id) {
+    public function getRole($id) {
         try {
             $data = Organization::where('id', $id)->with('role')->get();
             return response()->json([
@@ -201,7 +164,7 @@ class OrganizationController extends Controller
         }
     }
 
-    public function get_user($id) {
+    public function getUser($id) {
         try {
             $data = OrganizationMember::where('organization_id', $id)->with('user')->get();
             return response()->json([
