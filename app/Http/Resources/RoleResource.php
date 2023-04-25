@@ -2,11 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Organization;
-use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class UserResource extends JsonResource
+class RoleResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -19,10 +17,8 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'email' => $this->email,
-            'phone_number' => $this->phone_number,
-            'photo' => $this->photo,
-            'organization' => OrganizationResource::collection($this->organizations)
+            'organization' =>  OrganizationResource::make($this->organization),
+            'permissions' => PermissionResource::collection($this->permissions),
         ];
     }
 }

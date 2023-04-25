@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
+use App\Models\Organization;
 use App\Models\OrganizationMember;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -53,27 +55,41 @@ class UserController extends Controller
     }
 
     public function register(Request $request) {
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => ['required','string'],
             'email' => ['required','string', 'email'],
             'password' => ['required','string'],
             'phone_number' => ['required','string'],
-            'photo' => ['required']
+            'photo' => ['string'],
+            'organization_ids' => 'array',
+            'organization_ids.*' => 'integer|exists:organizations,id',
+            'role_ids' => 'array',
+            'role_ids.*' => 'integer|exists:roles,id',
         ]);
         
         try {
-            $data = new User;
-            $data->name = $request->input('name');
-            $data->email = $request->input('email');
-            $data->password = Hash::make($request->input('password'));
-            $data->phone_number = $request->input('phone_number');
-            $data->photo = $request->input('photo');
-            $data->save();
+            $user = User::create([
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'phone_number' => $request->input('phone_number'),
+                'photo' => $request->input('photo'),
+                'password' => Hash::make($validatedData['password'])
+            ]);
+
+            if (isset($validatedData['organization_ids'])) {
+                $organizations = Organization::find($validatedData['organization_ids']);
+                $user->organizations()->attach($organizations);
+            }
+
+            if(isset($validatedData['role_ids'])) {
+                $roles = Role::find($validatedData['role_ids']);
+                $user->roles()->attach($roles);
+            }
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Register success',
-                'data' => $data
+                'data' => new UserResource($user)
             ],200);
         }catch(\Exception $e){
             return response()->json([
@@ -93,22 +109,38 @@ class UserController extends Controller
     }
 
     public function update(Request $request, $id) {
-        $request->validate([
-            'name' => ['required','string'],
-            'email' => ['required','string', 'email'],
-            'password' => ['required','string'],
-            'phone_number' => ['required','string'],
-            'photo' => ['required'],
+        $validatedData = $request->validate([
+            'name' => ['string'],
+            'email' => ['email'],
+            // 'password' => ['string'],
+            'phone_number' => ['string'],
+            'photo' => ['string'],
+            'organization_ids' => 'array',
+            'organization_ids.*' => 'integer|exists:organizations,id',
+            'role_ids' => 'array',
+            'role_ids.*' => 'integer|exists:roles,id',
         ]);
         
         try {
             $data = User::find($id);
-            $data->name = $request->input('name');
-            $data->email = $request->input('email');
-            $data->password = Hash::make($request->input('password'));
-            $data->phone_number = $request->input('phone_number');
-            $data->photo = $request->input('photo');
-            $data->save();
+            // dd($data->password);
+            $data->update([
+                'name' => $validatedData['name'] ?? $data->name,
+                'email' => $validatedData['email'] ?? $data->email,
+                'phone_number' => $validatedData['phone_number'] ?? $data->phone_number,
+                'photo' => $validatedData['photo'] ?? $data->photo,
+                // 'password' => Hash::make($validatedData['password']) ?? $data->password
+            ]);
+
+            if (isset($validatedData['organization_ids'])) {
+                $organizations = Organization::find($validatedData['organization_ids']);
+                $data->organizations()->sync($organizations);
+            }
+
+            if(isset($validatedData['role_ids'])) {
+                $roles = Role::find($validatedData['role_ids']);
+                $data->roles()->sync($roles);
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -121,6 +153,15 @@ class UserController extends Controller
                 'message' => $e->getMessage()
             ],401);
         }
+    }
+
+    public function delete($id) {
+        $data = User::find($id);
+        $data->delete();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Delete success'
+        ], 200);
     }
 
 

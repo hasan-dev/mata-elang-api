@@ -27,4 +27,8 @@ class AssetController extends Controller
     public function detail($id) {
         return $this->assetservice->detail($id);
     }
+
+    public function delete($id) {
+        return $this->assetservice->delete($id);
+    }
 }

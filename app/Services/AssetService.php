@@ -24,4 +24,8 @@ class AssetService
     public function register($data) {
         return Http::post($this->baseUri . '/register', $data);
     }
+
+    public function delete($id) {
+        return Http::delete($this->baseUri . '/delete/' . $id);
+    }
 }

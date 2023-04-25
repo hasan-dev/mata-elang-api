@@ -28,4 +28,8 @@ use Illuminate\Support\Facades\Http;
         public function login($data) {
             return Http::post($this->baseUri . '/login', $data);
         }
+
+        public function delete($id) {
+            return Http::delete($this->baseUri . '/delete/' . $id);
+        }
     }

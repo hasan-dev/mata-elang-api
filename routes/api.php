@@ -3,6 +3,7 @@
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationMemberController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\SensorController;
@@ -32,12 +33,14 @@ Route::prefix('sensors')->group(function () {
     Route::post('/register', [SensorController::class, 'register']);
     Route::post('/heartbeat', [SensorController::class, 'heartbeat']);
     Route::get('/uuid', [SensorController::class, 'login2']);
+    Route::delete('/delete/{id}', [SensorController::class, 'delete']);
 });
 
 Route::prefix('users')->group(function () {
     Route::post('/login', [UserController::class, 'login']);
-    Route::patch('{id}/update', [UserController::class, 'update']);
+    Route::patch('/update/{id}', [UserController::class, 'update']);
     Route::get('/{id}', [UserController::class, 'profile']);
+    Route::delete('/delete/{id}', [UserController::class, 'delete']);
 });
 
 
@@ -45,8 +48,12 @@ Route::prefix('assets')->group(function () {
     Route::post('/register', [AssetController::class, 'register']);
     Route::patch('/update/{id}', [AssetController::class, 'edit']);
     Route::get('/{id}', [AssetController::class, 'detail']);
+    Route::delete('/delete/{id}', [AssetController::class, 'delete']);
 });
 
+Route::prefix('permissions')->group(function () {
+    Route::get('/all', [PermissionController::class, 'get']);
+});
 
 Route::prefix('organizations')->group(function () {
     Route::post('/create', [OrganizationController::class, 'create']);
@@ -56,12 +63,14 @@ Route::prefix('organizations')->group(function () {
     Route::get('/{id}/assets/all', [OrganizationController::class, 'getAsset']);
     Route::get('/{id}/roles/all', [OrganizationController::class, 'getRole']);
     Route::get('/{id}/users/all', [OrganizationController::class, 'getUser']);
-    Route::post('/{id}/users/edit_role', [OrganizationMemberController::class, 'editUser']);
     Route::get('/{id}', [OrganizationController::class, 'profile']);
     Route::post('{id}/users/register', [UserController::class, 'register']);
+    Route::delete('/{id}/delete', [OrganizationController::class, 'delete']);
 });
 
 Route::prefix('roles')->group(function () {
     Route::post('/create', [RoleController::class, 'create']);
-    Route::post('/add-permission', [RolePermissionController::class, 'create']);
+    Route::patch('/update/{id}', [RoleController::class, 'edit']);
+    Route::delete('/delete/{id}', [RoleController::class, 'delete']);
+    Route::get('/{id}', [RoleController::class, 'detail']);
 });

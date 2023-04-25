@@ -8,13 +8,26 @@ use Illuminate\Database\Eloquent\Model;
 class Organization extends Model
 {
     use HasFactory;
-    protected $table = 'organizations';
+
+    protected $fillable = [
+        'name',  
+        'email',
+        'address',
+        'province',
+        'city',
+        'phone_number',
+        'website',
+        'oinkcode',
+        'website',
+        'parent_id',
+    ];
 
     public function roles() {
         return $this->hasMany(Role::class);
     }
 
-    public function organization_members() {
-        return $this->hasMany(OrganizationMember::class);
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
     }
 }

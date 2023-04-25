@@ -24,10 +24,10 @@ class OrganizationResource extends JsonResource
             'address' => $this->address,
             'province' => $this->province,
             'city' => $this->city,
-            'phone_number'  => $this->phone,
+            'phone_number'  => $this->phone_number,
             'oinkcode' => $this->oinkcode,
             'website' => $this->website,
-            // 'parent_organization' => Organization::find($this->parent_id), 
+            'parent_organization' => Organization::find($this->parent_id), 
         ];
     }
 }

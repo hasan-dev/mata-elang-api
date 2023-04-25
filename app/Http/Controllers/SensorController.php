@@ -31,6 +31,10 @@ class SensorController extends Controller
         return $this->sensorService->login($request->all());
     }
 
+    public function delete($id) {
+        return $this->sensorService->delete($id);
+    }
+
     // public function heartbeat(Request $request) {
     //     return $this->sensorService->heartbeat($request->all());
     // }

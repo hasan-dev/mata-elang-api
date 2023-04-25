@@ -22,6 +22,8 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'phone_number',
+        'photo'
     ];
 
     /**
@@ -29,10 +31,9 @@ class User extends Authenticatable implements JWTSubject
      *
      * @var array<int, string>
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    // protected $hidden = [
+    //     'password',
+    // ];
 
     /**
      * The attributes that should be cast.
@@ -43,8 +44,14 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at' => 'datetime',
     ];
 
-    public function organization_members() {
-        return $this->hasMany(OrganizationMember::class);
+    public function organizations()
+    {
+        return $this->belongsToMany(Organization::class);
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class);
     }
     
 
