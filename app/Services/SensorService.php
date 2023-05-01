@@ -32,4 +32,8 @@ use Illuminate\Support\Facades\Http;
         public function delete($id) {
             return Http::delete($this->baseUri . '/delete/' . $id);
         }
+
+        public function detail($id) {
+            return Http::get($this->baseUri . '/' . $id);
+        }
     }

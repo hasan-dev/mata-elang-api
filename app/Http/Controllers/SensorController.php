@@ -17,6 +17,7 @@ class SensorController extends Controller
     {
         $this->sensorService = $sensorService;
         $this->middleware('auth:api', ['except' => ['login']]);
+        // $this->middleware('auth:sensors', ['only' => ['heartbeat']]);
     }
 
     public function register(Request $request) {
@@ -33,6 +34,10 @@ class SensorController extends Controller
 
     public function delete($id) {
         return $this->sensorService->delete($id);
+    }
+
+    public function detail($id) {
+        return $this->sensorService->detail($id);
     }
 
     // public function heartbeat(Request $request) {

@@ -34,6 +34,7 @@ Route::prefix('sensors')->group(function () {
     Route::post('/heartbeat', [SensorController::class, 'heartbeat']);
     Route::get('/uuid', [SensorController::class, 'login2']);
     Route::delete('/delete/{id}', [SensorController::class, 'delete']);
+    Route::get('/{id}', [SensorController::class, 'detail']);
 });
 
 Route::prefix('users')->group(function () {
