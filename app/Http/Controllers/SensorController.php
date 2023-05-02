@@ -16,7 +16,7 @@ class SensorController extends Controller
     public function __construct(SensorService $sensorService)
     {
         $this->sensorService = $sensorService;
-        $this->middleware('auth:api', ['except' => ['login']]);
+        $this->middleware('auth:api', ['except' => ['login', 'updateStatus']]);
         // $this->middleware('auth:sensors', ['only' => ['heartbeat']]);
     }
 
@@ -38,6 +38,10 @@ class SensorController extends Controller
 
     public function detail($id) {
         return $this->sensorService->detail($id);
+    }
+
+    public function updateStatus(Request $request, $id) {
+        return $this->sensorService->updateStatus($request->all(), $id);
     }
 
     // public function heartbeat(Request $request) {

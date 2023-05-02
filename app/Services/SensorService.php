@@ -36,4 +36,8 @@ use Illuminate\Support\Facades\Http;
         public function detail($id) {
             return Http::get($this->baseUri . '/' . $id);
         }
+
+        public function updateStatus($data, $id) {
+            return Http::patch($this->baseUri . '/update_status/' . $id, $data);
+        }
     }

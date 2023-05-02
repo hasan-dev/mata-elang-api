@@ -35,6 +35,7 @@ Route::prefix('sensors')->group(function () {
     Route::get('/uuid', [SensorController::class, 'login2']);
     Route::delete('/delete/{id}', [SensorController::class, 'delete']);
     Route::get('/{id}', [SensorController::class, 'detail']);
+    Route::patch('/update_status/{id}', [SensorController::class, 'updateStatus']);
 });
 
 Route::prefix('users')->group(function () {
