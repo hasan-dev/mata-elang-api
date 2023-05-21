@@ -76,14 +76,16 @@ class UserController extends Controller
                 'password' => Hash::make($validatedData['password'])
             ]);
 
-            if (isset($validatedData['organization_ids'])) {
-                $organizations = Organization::find($validatedData['organization_ids']);
-                $user->organizations()->attach($organizations);
-            }
+            $organizationIds = $request->input('organization_ids');
+            $roleIds = $request->input('role_ids');
 
-            if(isset($validatedData['role_ids'])) {
-                $roles = Role::find($validatedData['role_ids']);
-                $user->roles()->attach($roles);
+            $organizations = Organization::whereIn('id', $organizationIds)->get();
+            $roles = Role::whereIn('id', $roleIds)->get();
+
+            foreach ($organizations as $organization) {
+                foreach ($roles as $role) {
+                    $user->organizations()->attach($organization, ['role_id' => $role->id]);
+                }
             }
 
             return response()->json([

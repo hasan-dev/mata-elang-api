@@ -128,6 +128,7 @@ class OrganizationController extends Controller
                 ->join('organizations', 'sensors.organization_id', '=', 'organizations.id')
                 ->select('sensors.*', 'organizations.id as organization_id', 'organizations.name as organization_name')
                 ->where('sensors.organization_id', $id)
+                ->where('sensors.status', '!=',  'deleted')
                 ->get();
             return response()->json([
                 'code' => 200,

@@ -14,13 +14,16 @@ class Role extends Model
         'organization_id'
     ];
 
-    public function organization() {
-        return $this->belongsTo(Organization::class);
-    }
-
     public function users()
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class, 'organization_user_role')
+            ->withPivot('organization_id');
+    }
+
+    public function organizations()
+    {
+        return $this->belongsToMany(Organization::class, 'organization_user_role')
+            ->withPivot('user_id');
     }
     
     public function permissions()

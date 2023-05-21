@@ -22,12 +22,15 @@ class Organization extends Model
         'parent_id',
     ];
 
-    public function roles() {
-        return $this->hasMany(Role::class);
-    }
-
     public function users()
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class, 'organization_user_role')
+            ->withPivot('role_id');
+    }
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'organization_user_role')
+            ->withPivot('user_id');
     }
 }
