@@ -22,7 +22,8 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'phone_number' => $this->phone_number,
             'photo' => $this->photo,
-            'organization' => OrganizationResource::collection($this->organizations)
+            'organization' => OrganizationResource::collection($this->organizations->unique()),
+            'role' => RoleResource::collection($this->roles),
         ];
     }
 }

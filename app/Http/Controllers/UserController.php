@@ -23,6 +23,7 @@ class UserController extends Controller
         $this->middleware('auth:api', ['except' => [
             'login', 
             'logout',
+            'getOrganizationbyUserId'
         ]]);
     }
 
@@ -125,7 +126,6 @@ class UserController extends Controller
         
         try {
             $data = User::find($id);
-            // dd($data->password);
             $data->update([
                 'name' => $validatedData['name'] ?? $data->name,
                 'email' => $validatedData['email'] ?? $data->email,
@@ -133,16 +133,6 @@ class UserController extends Controller
                 'photo' => $validatedData['photo'] ?? $data->photo,
                 // 'password' => Hash::make($validatedData['password']) ?? $data->password
             ]);
-
-            if (isset($validatedData['organization_ids'])) {
-                $organizations = Organization::find($validatedData['organization_ids']);
-                $data->organizations()->sync($organizations);
-            }
-
-            if(isset($validatedData['role_ids'])) {
-                $roles = Role::find($validatedData['role_ids']);
-                $data->roles()->sync($roles);
-            }
 
             return response()->json([
                 'status' => 'success',
@@ -155,6 +145,42 @@ class UserController extends Controller
                 'message' => $e->getMessage()
             ],401);
         }
+    }
+
+    public function editUserRole(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'organization_ids' => 'array',
+            'organization_ids.*' => 'integer|exists:organizations,id',
+            'role_ids' => 'array',
+            'role_ids.*' => 'integer|exists:roles,id',
+        ]);
+        
+        $user = User::findOrFail($id);
+        $organizations = Organization::whereIn('id', $validatedData['organization_ids'])->pluck('id');
+        $roles = Role::whereIn('id', $validatedData['role_ids'])->pluck('id');
+
+        foreach ($organizations as $organization) {
+            foreach ($roles as $role) {
+                $user->organizations()->attach($organization, ['role_id' => $role]);
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Organizations and roles added to user successfully',
+            'data' => $user
+        ], 200);
+    }
+
+    public function getOrganizationbyUserId($id) {
+        $data = User::find($id);
+        $organizations = $data->organizations;
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Success',
+            'data' => $organizations
+        ], 200);
     }
 
     public function delete($id) {

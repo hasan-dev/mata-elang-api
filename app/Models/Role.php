@@ -16,18 +16,16 @@ class Role extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'organization_user_role')
-            ->withPivot('organization_id');
+        return $this->belongsToMany(User::class, 'organization_user_role');
     }
 
-    public function organizations()
+    public function organization() 
     {
-        return $this->belongsToMany(Organization::class, 'organization_user_role')
-            ->withPivot('user_id');
+        return $this->belongsTo(Organization::class);
     }
     
     public function permissions()
     {
-        return $this->belongsToMany(Permission::class);
+        return $this->belongsToMany(Permission::class, 'permission_role');
     }
 }

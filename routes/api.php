@@ -76,3 +76,5 @@ Route::prefix('roles')->group(function () {
     Route::delete('/delete/{id}', [RoleController::class, 'delete']);
     Route::get('/{id}', [RoleController::class, 'detail']);
 });
+
+Route::patch('/organization_members/{id}', [UserController::class, 'addOrganizations']);

@@ -44,16 +44,15 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at' => 'datetime',
     ];
 
+    
     public function organizations()
     {
-        return $this->belongsToMany(Organization::class, 'organization_user_role')
-            ->withPivot('role_id');
+        return $this->belongsToMany(Organization::class, 'organization_user_role');
     }
 
-    public function roles()
+    public function roles() 
     {
-        return $this->belongsToMany(Role::class, 'organization_user_role')
-            ->withPivot('organization_id');
+        return $this->belongsToMany(Role::class, 'organization_user_role');
     }
     
 
