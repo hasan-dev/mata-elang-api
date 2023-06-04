@@ -21,7 +21,7 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware('auth:api', ['except' => [
-            'login', 
+            'login',
             'logout',
             'getOrganizationbyUserId'
         ]]);
@@ -67,7 +67,7 @@ class UserController extends Controller
             'role_ids' => 'array',
             'role_ids.*' => 'integer|exists:roles,id',
         ]);
-        
+
         try {
             $user = User::create([
                 'name' => $validatedData['name'],
@@ -123,21 +123,57 @@ class UserController extends Controller
             'role_ids' => 'array',
             'role_ids.*' => 'integer|exists:roles,id',
         ]);
-        
+
         try {
-            $data = User::find($id);
-            $data->update([
-                'name' => $validatedData['name'] ?? $data->name,
-                'email' => $validatedData['email'] ?? $data->email,
-                'phone_number' => $validatedData['phone_number'] ?? $data->phone_number,
-                'photo' => $validatedData['photo'] ?? $data->photo,
-                // 'password' => Hash::make($validatedData['password']) ?? $data->password
+            // $data = User::find($id);
+            // $data->update([
+            //     'name' => $validatedData['name'] ?? $data->name,
+            //     'email' => $validatedData['email'] ?? $data->email,
+            //     'phone_number' => $validatedData['phone_number'] ?? $data->phone_number,
+            //     'photo' => $validatedData['photo'] ?? $data->photo,
+            //     // 'password' => Hash::make($validatedData['password']) ?? $data->password
+            // ]);
+            $user = User::findOrFail($id);
+
+            // Validasi request jika diperlukan
+            $validatedData = $request->validate([
+                'name' => 'required',
+                'email' => 'required|email',
+                'phone_number' => 'required',
+                'photo' => 'nullable',
+                'organization_ids' => 'nullable|array',
+                'role_ids' => 'nullable|array',
             ]);
+
+            // Update data user
+            $user->name = $validatedData['name'];
+            $user->email = $validatedData['email'];
+            $user->phone_number = $validatedData['phone_number'];
+            $user->photo = $validatedData['photo'];
+
+            // Simpan perubahan pada user
+            $user->save();
+
+            // Sinkronisasi relasi organizations
+            if (isset($validatedData['organization_ids'])) {
+                $user->organizations()->sync($validatedData['organization_ids']);
+            } else {
+                $user->organizations()->detach();
+            }
+
+            // Sinkronisasi relasi roles pada setiap organization
+            if (isset($validatedData['role_ids'])) {
+                foreach ($validatedData['organization_ids'] as $organizationId) {
+                    $user->roles()->syncWithoutDetaching($validatedData['role_ids'], ['organization_id' => $organizationId]);
+                }
+            } else {
+                $user->roles()->detach();
+            }
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Update success',
-                'data' => $data
+                'data' => $user
             ],200);
         }catch(\Exception $e){
             return response()->json([
@@ -145,32 +181,6 @@ class UserController extends Controller
                 'message' => $e->getMessage()
             ],401);
         }
-    }
-
-    public function editUserRole(Request $request, $id)
-    {
-        $validatedData = $request->validate([
-            'organization_ids' => 'array',
-            'organization_ids.*' => 'integer|exists:organizations,id',
-            'role_ids' => 'array',
-            'role_ids.*' => 'integer|exists:roles,id',
-        ]);
-        
-        $user = User::findOrFail($id);
-        $organizations = Organization::whereIn('id', $validatedData['organization_ids'])->pluck('id');
-        $roles = Role::whereIn('id', $validatedData['role_ids'])->pluck('id');
-
-        foreach ($organizations as $organization) {
-            foreach ($roles as $role) {
-                $user->organizations()->attach($organization, ['role_id' => $role]);
-            }
-        }
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Organizations and roles added to user successfully',
-            'data' => $user
-        ], 200);
     }
 
     public function getOrganizationbyUserId($id) {
@@ -215,7 +225,7 @@ class UserController extends Controller
         $newToken = JWTAuth::refresh($token, true);
         return response()->json([
             'code' => 200,
-            'access_token' => $newToken 
+            'access_token' => $newToken
         ], 200);
     }
 }

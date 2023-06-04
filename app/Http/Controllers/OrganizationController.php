@@ -150,8 +150,8 @@ class OrganizationController extends Controller
                 ->join('organizations', 'assets.organization_id', '=', 'organizations.id')
                 ->join('users', 'assets.pic_id', '=', 'users.id')
                 ->join('sensors', 'assets.sensor_id', '=', 'sensors.id')
-                ->select('assets.id', 'assets.name', 'assets.description', 'organizations.id as organization_id', 
-                'organizations.name as organization_name', 'users.id as user_id', 
+                ->select('assets.id', 'assets.name', 'assets.description', 'organizations.id as organization_id',
+                'organizations.name as organization_name', 'users.id as user_id',
                 'users.name as user_name', 'sensors.id as sensor_id', 'sensors.name as sensor_name')
                 ->where('assets.organization_id', $id)
                 ->get();
@@ -189,12 +189,12 @@ class OrganizationController extends Controller
     public function getUser($id) {
         try {
             $organization = Organization::findOrFail($id);
-            $users = $organization->users()->get();
+            $users = $organization->users;
 
             return response()->json([
                 'code' => 200,
                 'message' => 'success',
-                'data' => $users
+                'data' => UserResource::collection($users)->unique('id')
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
