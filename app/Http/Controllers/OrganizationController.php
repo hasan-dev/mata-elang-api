@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\OrganizationResource;
+use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\Organization;
 use App\Models\OrganizationMember;
@@ -171,11 +172,11 @@ class OrganizationController extends Controller
 
     public function getRole($id) {
         try {
-            $data = Organization::where('id', $id)->with('roles')->get();
+            $data = Role::where('organization_id', $id)->get();
             return response()->json([
                 'code' => 200,
                 'message' => 'success',
-                'data' => $data
+                'data' => RoleResource::collection($data)
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
