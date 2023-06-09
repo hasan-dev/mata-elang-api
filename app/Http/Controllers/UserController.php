@@ -61,7 +61,7 @@ class UserController extends Controller
             'email' => ['required','string', 'email'],
             'password' => ['required','string'],
             'phone_number' => ['required','string'],
-            'photo' => ['string'],
+            // 'photo' => ['string'],
             'organization_ids' => 'array',
             'organization_ids.*' => 'integer|exists:organizations,id',
             'role_ids' => 'array',
@@ -73,7 +73,7 @@ class UserController extends Controller
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
                 'phone_number' => $request->input('phone_number'),
-                'photo' => $request->input('photo'),
+                // 'photo' => $request->input('photo'),
                 'password' => Hash::make($validatedData['password'])
             ]);
 
@@ -115,13 +115,13 @@ class UserController extends Controller
         $validatedData = $request->validate([
             'name' => ['string'],
             'email' => ['email'],
-            // 'password' => ['string'],
+            'password' => ['string'],
             'phone_number' => ['string'],
-            'photo' => ['string'],
+            // 'photo' => ['string'],
             'organization_ids' => 'array',
-            'organization_ids.*' => 'integer|exists:organizations,id',
+            'organization_ids.*' => 'integer',
             'role_ids' => 'array',
-            'role_ids.*' => 'integer|exists:roles,id',
+            'role_ids.*' => 'integer',
         ]);
 
         try {
@@ -140,7 +140,7 @@ class UserController extends Controller
                 'name' => 'required',
                 'email' => 'required|email',
                 'phone_number' => 'required',
-                'photo' => 'nullable',
+                'password' => 'nullable|string',
                 'organization_ids' => 'nullable|array',
                 'role_ids' => 'nullable|array',
             ]);
@@ -149,19 +149,18 @@ class UserController extends Controller
             $user->name = $validatedData['name'];
             $user->email = $validatedData['email'];
             $user->phone_number = $validatedData['phone_number'];
-            $user->photo = $validatedData['photo'];
+            $user->password = Hash::make($validatedData['password']);
+            // $user->photo = $validatedData['photo'];
 
             // Simpan perubahan pada user
             $user->save();
 
-            // Sinkronisasi relasi organizations
             if (isset($validatedData['organization_ids'])) {
                 $user->organizations()->sync($validatedData['organization_ids']);
             } else {
                 $user->organizations()->detach();
             }
 
-            // Sinkronisasi relasi roles pada setiap organization
             if (isset($validatedData['role_ids'])) {
                 foreach ($validatedData['organization_ids'] as $organizationId) {
                     $user->roles()->syncWithoutDetaching($validatedData['role_ids'], ['organization_id' => $organizationId]);
@@ -179,7 +178,7 @@ class UserController extends Controller
             return response()->json([
                 'status' => 'failed',
                 'message' => $e->getMessage()
-            ],401);
+            ]);
         }
     }
 
@@ -216,7 +215,7 @@ class UserController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * (60 * 24 * 30),
-            'data' => $data
+            'data' => new UserResource($data)
         ]);
     }
 
