@@ -43,6 +43,8 @@ Route::prefix('users')->group(function () {
     Route::patch('/update/{id}', [UserController::class, 'update']);
     Route::get('/{id}', [UserController::class, 'profile']);
     Route::delete('/delete/{id}', [UserController::class, 'delete']);
+    Route::patch('/update_profile/{id}', [UserController::class, 'updateProfile']);
+    Route::post('/register_first', [UserController::class, 'registerFirst']);
 });
 
 
@@ -59,6 +61,7 @@ Route::prefix('permissions')->group(function () {
 
 Route::prefix('organizations')->group(function () {
     Route::post('/create', [OrganizationController::class, 'create']);
+    Route::post('/create_first', [OrganizationController::class, 'createFirstOrganization']);
     Route::patch('/update/{id}', [OrganizationController::class, 'edit']);
     Route::get('{id}/all', [OrganizationController::class, 'getAll']);
     Route::get('/{id}/sensors/all', [OrganizationController::class, 'getSensor']);

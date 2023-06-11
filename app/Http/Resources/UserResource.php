@@ -21,7 +21,9 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'phone_number' => $this->phone_number,
-            'photo' => $this->photo,
+            'website' => $this->website,
+            'address' => $this->address,
+            'birth_date' => $this->birth_date,
             'organization' => OrganizationResource::collection($this->organizations->unique()),
             'role' => RoleResource::collection($this->roles),
         ];

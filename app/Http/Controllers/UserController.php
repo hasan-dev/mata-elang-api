@@ -23,7 +23,8 @@ class UserController extends Controller
         $this->middleware('auth:api', ['except' => [
             'login',
             'logout',
-            'getOrganizationbyUserId'
+            'getOrganizationbyUserId',
+            'registerFirst',
         ]]);
     }
 
@@ -61,7 +62,9 @@ class UserController extends Controller
             'email' => ['required','string', 'email'],
             'password' => ['required','string'],
             'phone_number' => ['required','string'],
-            // 'photo' => ['string'],
+            'website'  => ['string'],
+            'address' => ['string'],
+            'birth_date' => ['string'],
             'organization_ids' => 'array',
             'organization_ids.*' => 'integer|exists:organizations,id',
             'role_ids' => 'array',
@@ -73,7 +76,6 @@ class UserController extends Controller
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
                 'phone_number' => $request->input('phone_number'),
-                // 'photo' => $request->input('photo'),
                 'password' => Hash::make($validatedData['password'])
             ]);
 
@@ -117,69 +119,78 @@ class UserController extends Controller
             'email' => ['email'],
             'password' => ['string'],
             'phone_number' => ['string'],
-            // 'photo' => ['string'],
+            'website'  => ['string'],
+            'address' => ['string'],
+            'birth_date' => ['string'],
             'organization_ids' => 'array',
             'organization_ids.*' => 'integer',
             'role_ids' => 'array',
             'role_ids.*' => 'integer',
         ]);
 
-        try {
-            // $data = User::find($id);
-            // $data->update([
-            //     'name' => $validatedData['name'] ?? $data->name,
-            //     'email' => $validatedData['email'] ?? $data->email,
-            //     'phone_number' => $validatedData['phone_number'] ?? $data->phone_number,
-            //     'photo' => $validatedData['photo'] ?? $data->photo,
-            //     // 'password' => Hash::make($validatedData['password']) ?? $data->password
-            // ]);
-            $user = User::findOrFail($id);
+        $user = User::findOrFail($id);
 
-            // Validasi request jika diperlukan
-            $validatedData = $request->validate([
-                'name' => 'required',
-                'email' => 'required|email',
-                'phone_number' => 'required',
-                'password' => 'nullable|string',
-                'organization_ids' => 'nullable|array',
-                'role_ids' => 'nullable|array',
-            ]);
+        // Update data user
+        $user->name = $validatedData['name'] ?? $user->name;
+        $user->email = $validatedData['email'] ?? $user->email;
+        $user->phone_number = $validatedData['phone_number'] ?? $user->phone_number;
+        $user->password = isset($validatedData['password']) ? Hash::make($validatedData['password']) : $user->password;
+        $user->website = $validatedData['website'] ?? $user->website;
+        $user->address = $validatedData['address'] ?? $user->address;
+        $user->birth_date = $validatedData['birth_date'] ?? $user->birth_date;
+        $user->save();
 
-            // Update data user
-            $user->name = $validatedData['name'];
-            $user->email = $validatedData['email'];
-            $user->phone_number = $validatedData['phone_number'];
-            $user->password = Hash::make($validatedData['password']);
-            // $user->photo = $validatedData['photo'];
-
-            // Simpan perubahan pada user
-            $user->save();
-
-            if (isset($validatedData['organization_ids'])) {
-                $user->organizations()->sync($validatedData['organization_ids']);
-            } else {
-                $user->organizations()->detach();
-            }
-
-            if (isset($validatedData['role_ids'])) {
-                foreach ($validatedData['organization_ids'] as $organizationId) {
-                    $user->roles()->syncWithoutDetaching($validatedData['role_ids'], ['organization_id' => $organizationId]);
-                }
-            } else {
-                $user->roles()->detach();
-            }
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Update success',
-                'data' => $user
-            ],200);
-        }catch(\Exception $e){
-            return response()->json([
-                'status' => 'failed',
-                'message' => $e->getMessage()
-            ]);
+        if (isset($validatedData['organization_ids'])) {
+            $user->organizations()->sync($validatedData['organization_ids']);
+        } else {
+            $user->organizations()->detach();
         }
+
+        if (isset($validatedData['role_ids'])) {
+            foreach ($validatedData['organization_ids'] as $organizationId) {
+                $user->roles()->sync($validatedData['role_ids'], ['organization_id' => $organizationId]);
+            }
+        } else {
+            $user->roles()->detach();
+        }
+
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Update success',
+            'data' => new UserResource ($user)
+        ], 200);
+
+    }
+
+    public function updateProfile(Request $request, $id) {
+        $validatedData = $request->validate([
+            'name' => ['string'],
+            'email' => ['email'],
+            'password' => ['string'],
+            'phone_number' => ['string'],
+            'website'  => ['string'],
+            'address' => ['string'],
+            'birth_date' => ['string']
+        ]);
+
+        $user = User::findOrFail($id);
+
+        // Update data user
+        $user->name = $validatedData['name'] ?? $user->name;
+        $user->email = $validatedData['email'] ?? $user->email;
+        $user->phone_number = $validatedData['phone_number'] ?? $user->phone_number;
+        $user->password = isset($validatedData['password']) ? Hash::make($validatedData['password']) : $user->password;
+        $user->website = $validatedData['website'] ?? $user->website;
+        $user->address = $validatedData['address'] ?? $user->address;
+        $user->birth_date = $validatedData['birth_date'] ?? $user->birth_date;
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Update success',
+            'data' => new UserResource ($user)
+        ], 200);
     }
 
     public function getOrganizationbyUserId($id) {
@@ -190,6 +201,56 @@ class UserController extends Controller
             'message' => 'Success',
             'data' => $organizations
         ], 200);
+    }
+
+    public function registerFirst(Request $request) {
+        $validatedData = $request->validate([
+            'name' => ['required','string'],
+            'email' => ['required','string', 'email'],
+            'password' => ['required','string'],
+            'phone_number' => ['required','string'],
+            'website'  => ['string'],
+            'address' => ['string'],
+            // 'birth_date' => ['string'],
+            'organization_ids' => 'array',
+            'organization_ids.*' => 'integer|exists:organizations,id',
+            'role_ids' => 'array',
+            'role_ids.*' => 'integer|exists:roles,id',
+        ]);
+
+        try {
+            $user = User::create([
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'phone_number' => $request->input('phone_number'),
+                'password' => Hash::make($validatedData['password']),
+                'website' => $validatedData['website'],
+                'address' => $validatedData['address'],
+            ]);
+
+            $organizationIds = $request->input('organization_ids');
+            $roleIds = $request->input('role_ids');
+
+            $organizations = Organization::whereIn('id', $organizationIds)->get();
+            $roles = Role::whereIn('id', $roleIds)->get();
+
+            foreach ($organizations as $organization) {
+                foreach ($roles as $role) {
+                    $user->organizations()->attach($organization, ['role_id' => $role->id]);
+                }
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Register success',
+                'data' => new UserResource($user)
+            ],200);
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => 'failed',
+                'message' => $e->getMessage()
+            ],401);
+        }
     }
 
     public function delete($id) {

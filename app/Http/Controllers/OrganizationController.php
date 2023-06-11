@@ -7,6 +7,7 @@ use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\Organization;
 use App\Models\OrganizationMember;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -18,7 +19,9 @@ class OrganizationController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api');
+        $this->middleware('auth:api', ['except' => [
+            'createFirstOrganization',
+        ]]);
     }
 
     public function profile($id) {
@@ -203,6 +206,61 @@ class OrganizationController extends Controller
                 'message' => 'error',
                 'data' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function createFirstOrganization(Request $request) {
+        $validatedData = $request->validate([
+            'name' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'address' => ['required', 'string'],
+            'province' => ['required', 'string'],
+            'city' => ['required', 'string'],
+            'phone_number' => ['required', 'string'],
+            'website' => ['required', 'string'],
+            'oinkcode' => ['string'],
+        ]);
+
+        try {
+            $organization = Organization::create([
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'address' => $validatedData['address'],
+                'province' => $validatedData['province'],
+                'city' => $validatedData['city'],
+                'phone_number' => $validatedData['phone_number'],
+                'website' => $validatedData['website'],
+                'oinkcode' => $validatedData['oinkcode'],
+                'website' => $validatedData['website']
+            ]);
+
+            // Menyimpan role admin dengan semua izin
+            $adminRole = Role::create([
+                'name' => 'Admin',
+                'organization_id' => $organization->id,
+            ]);
+
+            // Mengaitkan semua izin dengan role admin
+            $permissions = Permission::pluck('id')->toArray();
+            $adminRole->permissions()->sync($permissions);
+
+            $responseData = [
+                'organization' => $organization,
+                'admin_role' => $adminRole,
+            ];
+
+            return response()->json([
+                'code' => 201,
+                'message' => 'created',
+                'data' => $responseData
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'code' => 500,
+                'message' => 'error',
+                'data' => $e->getMessage()
+            ]);
         }
     }
 }
