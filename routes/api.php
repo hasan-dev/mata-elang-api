@@ -45,6 +45,7 @@ Route::prefix('users')->group(function () {
     Route::delete('/delete/{id}', [UserController::class, 'delete']);
     Route::patch('/update_profile/{id}', [UserController::class, 'updateProfile']);
     Route::post('/register_first', [UserController::class, 'registerFirst']);
+    Route::post('/logout', [UserController::class, 'logout']);
 });
 
 

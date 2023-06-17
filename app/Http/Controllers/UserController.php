@@ -262,6 +262,12 @@ class UserController extends Controller
         ], 200);
     }
 
+    public function logout()
+    {
+        auth('api')->logout();
+        return response()->json(['message' => 'Successfully logged out']);
+    }
+
 
          /**
      * Get the token array structure.
