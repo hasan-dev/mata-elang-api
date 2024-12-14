@@ -28,40 +28,42 @@ class UserController extends Controller
         ]]);
     }
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         try {
             $request->validate([
-                'email' => ['required','email'],
+                'email' => ['required', 'email'],
                 'password' => ['required'],
             ]);
             $email = $request->input('email');
             $password = $request->input('password');
             $data = User::where('email', $email)->first();
 
-            if(Hash::check($password, $data->password))
-            {
-                if(! $token = auth('api')->login($data)) {
+            if (Hash::check($password, $data->password)) {
+                if (!$token = auth('api')->login($data)) {
                     return response()->json(['error' => 'Unauthorized'], 401);
                 } else {
                     $user = User::where('email', $request->email)->first();
                     $user->save();
-                    return $this->respondWithToken($token, $data);
+                    $data = $this->respondWithToken($token, $data);
+                    return $data;
                 }
             }
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 'failed',
                 'message' => $e->getMessage()
-            ],401);
+            ], 401);
         }
     }
 
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
         $validatedData = $request->validate([
-            'name' => ['required','string'],
-            'email' => ['required','string', 'email'],
-            'password' => ['required','string'],
-            'phone_number' => ['required','string'],
+            'name' => ['required', 'string'],
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+            'phone_number' => ['required', 'string'],
             'website'  => ['string'],
             'address' => ['string'],
             'birth_date' => ['string'],
@@ -95,16 +97,17 @@ class UserController extends Controller
                 'status' => 'success',
                 'message' => 'Register success',
                 'data' => new UserResource($user)
-            ],200);
-        }catch(\Exception $e){
+            ], 200);
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 'failed',
                 'message' => $e->getMessage()
-            ],401);
+            ], 401);
         }
     }
 
-    public function profile($id) {
+    public function profile($id)
+    {
         $data = User::find($id);
         return response()->json([
             'status' => 'success',
@@ -113,7 +116,8 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $validatedData = $request->validate([
             'name' => ['string'],
             'email' => ['email'],
@@ -158,12 +162,12 @@ class UserController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Update success',
-            'data' => new UserResource ($user)
+            'data' => new UserResource($user)
         ], 200);
-
     }
 
-    public function updateProfile(Request $request, $id) {
+    public function updateProfile(Request $request, $id)
+    {
         $validatedData = $request->validate([
             'name' => ['string'],
             'email' => ['email'],
@@ -189,11 +193,12 @@ class UserController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Update success',
-            'data' => new UserResource ($user)
+            'data' => new UserResource($user)
         ], 200);
     }
 
-    public function getOrganizationbyUserId($id) {
+    public function getOrganizationbyUserId($id)
+    {
         $data = User::find($id);
         $organizations = $data->organizations;
         return response()->json([
@@ -203,12 +208,13 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function registerFirst(Request $request) {
+    public function registerFirst(Request $request)
+    {
         $validatedData = $request->validate([
-            'name' => ['required','string'],
-            'email' => ['required','string', 'email'],
-            'password' => ['required','string'],
-            'phone_number' => ['required','string'],
+            'name' => ['required', 'string'],
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+            'phone_number' => ['required', 'string'],
             'website'  => ['string'],
             'address' => ['string'],
             // 'birth_date' => ['string'],
@@ -244,16 +250,17 @@ class UserController extends Controller
                 'status' => 'success',
                 'message' => 'Register success',
                 'data' => new UserResource($user)
-            ],200);
-        }catch(\Exception $e){
+            ], 200);
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => 'failed',
                 'message' => $e->getMessage()
-            ],401);
+            ], 401);
         }
     }
 
-    public function delete($id) {
+    public function delete($id)
+    {
         $data = User::find($id);
         $data->delete();
         return response()->json([
@@ -269,14 +276,14 @@ class UserController extends Controller
     }
 
 
-         /**
+    /**
      * Get the token array structure.
      *
      * @param  string $token
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function respondWithToken($token,$data)
+    protected function respondWithToken($token, $data)
     {
         return response()->json([
             'access_token' => $token,
@@ -286,7 +293,8 @@ class UserController extends Controller
         ]);
     }
 
-    public function refresh() {
+    public function refresh()
+    {
         $token = JWTAuth::getToken();
         $newToken = JWTAuth::refresh($token, true);
         return response()->json([

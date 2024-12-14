@@ -8,6 +8,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\SensorController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AlertController;
 use App\Models\OrganizationMember;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,25 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+
+Route::get('/hello', function (Request $request) {
+    return response()->json(['message' => 'Hello World']);
+});
+Route::get('/routes', function () {
+    $routeCollection = Route::getRoutes();
+    $routes = [];
+    foreach ($routeCollection as $route) {
+        $routes[] = [
+            'method' => $route->methods()[0],
+            'uri' => $route->uri(),
+            'name' => $route->getName(),
+            'action' => $route->getActionName(),
+        ];
+    }
+    return response()->json($routes);
+});
+
+// Route::get('/alert', [AlertController::class, 'getData']);
 
 Route::prefix('sensors')->group(function () {
     Route::post('/login', [SensorController::class, 'login']);
@@ -64,8 +84,9 @@ Route::prefix('organizations')->group(function () {
     Route::post('/create', [OrganizationController::class, 'create']);
     Route::post('/create_first', [OrganizationController::class, 'createFirstOrganization']);
     Route::patch('/update/{id}', [OrganizationController::class, 'edit']);
-    Route::get('{id}/all', [OrganizationController::class, 'getAll']);
+    // Route::get('{id}/all', [OrganizationController::class, 'getAll']);
     Route::get('/{id}/sensors/all', [OrganizationController::class, 'getSensor']);
+    Route::get('/alert/all', [AlertController::class, 'getData']);
     Route::get('/{id}/assets/all', [OrganizationController::class, 'getAsset']);
     Route::get('/{id}/roles/all', [OrganizationController::class, 'getRole']);
     Route::get('/{id}/users/all', [OrganizationController::class, 'getUser']);

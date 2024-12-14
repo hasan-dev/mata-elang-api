@@ -24,7 +24,8 @@ class OrganizationController extends Controller
         ]]);
     }
 
-    public function profile($id) {
+    public function profile($id)
+    {
         $data = Organization::findOrFail($id);
         return response()->json([
             'code' => 200,
@@ -33,7 +34,8 @@ class OrganizationController extends Controller
         ], 200);
     }
 
-    public function delete($id) {
+    public function delete($id)
+    {
         $data = Organization::findOrFail($id);
         $data->delete();
         return response()->json([
@@ -42,7 +44,8 @@ class OrganizationController extends Controller
         ], 200);
     }
 
-    public function create(Request $request) {
+    public function create(Request $request)
+    {
         $validatedData = $request->validate([
             'name' => ['required', 'string'],
             'email' => ['required', 'email'],
@@ -86,7 +89,8 @@ class OrganizationController extends Controller
         }
     }
 
-    public function edit(Request $request, $id) {
+    public function edit(Request $request, $id)
+    {
         $validatedData = $request->validate([
             'name' => ['string'],
             'email' => ['email', 'max:255'],
@@ -126,7 +130,8 @@ class OrganizationController extends Controller
         }
     }
 
-    public function getSensor($id) {
+    public function getSensor($id)
+    {
         try {
             $data = DB::table('sensors')
                 ->join('organizations', 'sensors.organization_id', '=', 'organizations.id')
@@ -148,15 +153,24 @@ class OrganizationController extends Controller
         }
     }
 
-    public function getAsset($id) {
+    public function getAsset($id)
+    {
         try {
             $data = DB::table('assets')
                 ->join('organizations', 'assets.organization_id', '=', 'organizations.id')
                 ->join('users', 'assets.pic_id', '=', 'users.id')
                 ->join('sensors', 'assets.sensor_id', '=', 'sensors.id')
-                ->select('assets.id', 'assets.name', 'assets.description', 'organizations.id as organization_id',
-                'organizations.name as organization_name', 'users.id as user_id',
-                'users.name as user_name', 'sensors.id as sensor_id', 'sensors.name as sensor_name')
+                ->select(
+                    'assets.id',
+                    'assets.name',
+                    'assets.description',
+                    'organizations.id as organization_id',
+                    'organizations.name as organization_name',
+                    'users.id as user_id',
+                    'users.name as user_name',
+                    'sensors.id as sensor_id',
+                    'sensors.name as sensor_name'
+                )
                 ->where('assets.organization_id', $id)
                 ->get();
             return response()->json([
@@ -173,7 +187,8 @@ class OrganizationController extends Controller
         }
     }
 
-    public function getRole($id) {
+    public function getRole($id)
+    {
         try {
             $data = Role::where('organization_id', $id)->get();
             return response()->json([
@@ -190,7 +205,8 @@ class OrganizationController extends Controller
         }
     }
 
-    public function getUser($id) {
+    public function getUser($id)
+    {
         try {
             $organization = Organization::findOrFail($id);
             $users = $organization->users;
@@ -209,7 +225,8 @@ class OrganizationController extends Controller
         }
     }
 
-    public function createFirstOrganization(Request $request) {
+    public function createFirstOrganization(Request $request)
+    {
         $validatedData = $request->validate([
             'name' => ['required', 'string'],
             'email' => ['required', 'email'],
@@ -254,7 +271,6 @@ class OrganizationController extends Controller
                 'message' => 'created',
                 'data' => $responseData
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'code' => 500,

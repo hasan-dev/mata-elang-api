@@ -16,3 +16,17 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/routes', function () {
+    $routeCollection = Route::getRoutes();
+    $routes = [];
+    foreach ($routeCollection as $route) {
+        $routes[] = [
+            'method' => $route->methods()[0],
+            'uri' => $route->uri(),
+            'name' => $route->getName(),
+            'action' => $route->getActionName(),
+        ];
+    }
+    return response()->json($routes);
+});
